@@ -10,6 +10,10 @@
 </p>
 
 <p align="center">
+  <img src="blob:https://gemini.google.com/d2ec93a9-db11-49b7-b44d-09586d2c7374" alt="Cinematic AI Banner" width="100%"/>
+</p>
+
+<p align="center">
   <strong>A conversational AI movie agent — BERT retrieves, LLaMA selects, Flask serves.</strong>
 </p>
 
