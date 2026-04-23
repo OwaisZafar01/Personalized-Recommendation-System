@@ -12,7 +12,6 @@
 <p align="center">
   <strong>A conversational AI movie agent — BERT retrieves, LLaMA selects, Flask serves.</strong>
 </p>
----
 
 ## How It Works
 
