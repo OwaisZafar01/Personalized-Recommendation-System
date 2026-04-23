@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CinematicAI — AI Movie Discovery</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Bebas+Neue&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:        #0e0b14;
+      --bg2:       #130f1e;
+      --surface:   #1a1528;
+      --card:      #1e1930;
+      --card2:     #241e38;
+      --border:    rgba(255,255,255,0.06);
+      --border2:   rgba(255,255,255,0.11);
+      --pink:      #e8409a;
+      --pink2:     #f472b6;
+      --pink-dim:  rgba(232,64,154,0.12);
+      --pink-glow: rgba(232,64,154,0.25);
+      --orange:    #f97316;
+      --orange2:   #fb923c;
+      --purple:    #a855f7;
+      --white:     #f5f0ff;
+      --muted:     #6b6478;
+      --muted2:    #2c2640;
+      --text:      #ddd6f0;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Manrope', sans-serif;
+      overflow-x: hidden;
+    }
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 9990;
+    }
+
+    /* NAVBAR */
+    .navbar {
+      position: fixed; top:0; left:0; right:0; z-index:1000;
+      height: 62px;
+      background: rgba(14,11,20,0.88);
+      backdrop-filter: blur(22px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2.5rem;
+      animation: slideDown .6s cubic-bezier(.16,1,.3,1) both;
+    }
+    @keyframes slideDown { from{transform:translateY(-100%);opacity:0} to{transform:translateY(0);opacity:1} }
+
+    .nav-logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
+    .logo-icon {
+      width:34px; height:34px; border-radius:8px;
+      background: linear-gradient(135deg, var(--pink), var(--orange));
+      display:flex; align-items:center; justify-content:center;
+      box-shadow: 0 0 16px var(--pink-glow); flex-shrink:0;
+    }
+    .logo-icon svg { width:17px; height:17px; }
+    .logo-wordmark { font-family:'Manrope',sans-serif; font-weight:800; font-size:17px; letter-spacing:-0.2px; }
+    .logo-wordmark .r { color: var(--pink2); }
+    .logo-wordmark .f { color: var(--orange2); }
+
+    .nav-links { display:flex; align-items:center; gap:10px; }
+    .nav-btn {
+      font-family:'Fira Code',monospace; font-size:11px; letter-spacing:1px;
+      text-decoration:none; color:#fff;
+      background: linear-gradient(135deg, var(--pink), var(--orange));
+      padding:9px 20px; border-radius:6px; font-weight:500;
+      transition: opacity .2s, transform .2s;
+      box-shadow: 0 4px 18px var(--pink-glow);
+    }
+    .nav-btn:hover { opacity:.85; transform:translateY(-1px); color:#fff; }
+    .nav-btn-ghost {
+      font-family:'Fira Code',monospace; font-size:11px; letter-spacing:1px;
+      text-decoration:none; color:var(--text);
+      border:1px solid var(--border2);
+      padding:9px 20px; border-radius:6px; font-weight:500;
+      transition: all .2s;
+    }
+    .nav-btn-ghost:hover { color:var(--pink2); border-color:rgba(232,64,154,0.4); transform:translateY(-1px); }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh; padding-top: 62px;
+      display:flex; align-items:center; justify-content:center;
+      position:relative; overflow:hidden;
+    }
+    .hero-radial {
+      position:absolute; inset:0;
+      background:
+        radial-gradient(ellipse 70% 60% at 18% 58%, rgba(180,30,80,0.2) 0%, transparent 60%),
+        radial-gradient(ellipse 45% 50% at 80% 30%, rgba(110,30,170,0.14) 0%, transparent 55%),
+        radial-gradient(ellipse 55% 55% at 50% 105%, rgba(120,20,65,0.28) 0%, transparent 55%);
+    }
+    .hero-grid {
+      position:absolute; inset:0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
+      background-size: 72px 72px;
+    }
+    .orb {
+      position:absolute; border-radius:50%;
+      filter:blur(90px); animation:floatOrb 9s ease-in-out infinite;
+    }
+    .orb1 { width:360px;height:360px;background:rgba(180,30,100,0.13);top:-90px;left:-110px; }
+    .orb2 { width:240px;height:240px;background:rgba(110,30,190,0.11);bottom:-40px;right:-50px;animation-delay:-4.5s; }
+    @keyframes floatOrb { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-26px) scale(1.04)} }
+
+    .hero-content {
+      position:relative; z-index:2;
+      text-align:center; padding:0 1.5rem; max-width:680px;
+    }
+    .hero-badge {
+      display:inline-flex; align-items:center; gap:7px;
+      border:1px solid rgba(232,64,154,0.28); border-radius:50px;
+      padding:5px 16px; margin-bottom:2rem;
+      font-family:'Fira Code',monospace; font-size:10px; letter-spacing:1.5px;
+      color:var(--pink2); text-transform:uppercase;
+      background:rgba(232,64,154,0.07);
+      animation: fadeUp .6s .2s both;
+    }
+    .badge-dot { width:6px;height:6px;border-radius:50%;background:var(--pink);animation:puls 2s infinite; }
+    @keyframes puls { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    .hero-h1 {
+      font-family:'Manrope',sans-serif; font-weight:800;
+      font-size: clamp(2.4rem, 5.5vw, 5rem);
+      line-height: 1; letter-spacing:-1px;
+      margin-bottom:1.4rem;
+      animation: fadeUp .6s .3s both;
+    }
+    .hero-h1 .word-rec {
+      display:block;
+      background: linear-gradient(100deg, #e8409a 0%, #f97316 60%, #e040fb 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .hero-h1 .word-film { display:block; color:var(--white); }
+
+    .hero-sub {
+      font-size:1rem; color:var(--muted); max-width:420px;
+      margin:0 auto 2.5rem; line-height:1.8; font-weight:400;
+      animation: fadeUp .6s .4s both;
+    }
+    .hero-ctas {
+      display:flex; align-items:center; justify-content:center; gap:12px; flex-wrap:wrap;
+      animation: fadeUp .6s .5s both;
+    }
+    .hero-cta {
+      display:inline-flex; align-items:center; gap:10px;
+      background: linear-gradient(135deg, var(--pink), var(--orange));
+      color:#fff; padding:14px 34px; border-radius:8px;
+      font-family:'Manrope',sans-serif; font-weight:700; font-size:14px;
+      text-decoration:none; transition:all .3s;
+      box-shadow: 0 8px 28px var(--pink-glow);
+    }
+    .hero-cta:hover { color:#fff; transform:translateY(-3px); box-shadow:0 14px 42px var(--pink-glow); }
+    .hero-cta svg { transition:transform .25s; }
+    .hero-cta:hover svg { transform:translateX(4px); }
+    .hero-cta-ghost {
+      display:inline-flex; align-items:center; gap:8px;
+      border:1px solid var(--border2); color:var(--text);
+      padding:14px 28px; border-radius:8px;
+      font-family:'Manrope',sans-serif; font-weight:600; font-size:14px;
+      text-decoration:none; transition:all .3s;
+    }
+    .hero-cta-ghost:hover { color:var(--pink2); border-color:rgba(232,64,154,0.4); transform:translateY(-3px); }
+
+    .hero-stats {
+      display:flex; justify-content:center; gap:3.5rem;
+      margin-top:4rem; padding-top:2.5rem;
+      border-top:1px solid var(--border);
+      animation: fadeUp .6s .6s both;
+    }
+    .stat-n {
+      font-family:'Bebas Neue',sans-serif; font-size:2.8rem; letter-spacing:1px; line-height:1;
+      background: linear-gradient(135deg, var(--pink2), var(--orange2));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .stat-l { font-family:'Fira Code',monospace; font-size:9px; letter-spacing:2px; color:var(--muted); text-transform:uppercase; margin-top:4px; }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+
+    /* FILMS SECTION */
+    .films-sec { padding:6rem 0 8rem; border-top:1px solid var(--border); }
+    .sec-head {
+      display:flex; align-items:flex-end; justify-content:space-between;
+      margin-bottom:2.5rem; flex-wrap:wrap; gap:1rem;
+    }
+    .sec-title { font-family:'Manrope',sans-serif; font-weight:800; font-size:clamp(1.8rem,4vw,2.8rem); color:var(--white); line-height:1; }
+    .sec-link {
+      font-family:'Fira Code',monospace; font-size:10px; letter-spacing:1px;
+      text-decoration:none; color:var(--muted);
+      border:1px solid var(--border2); padding:8px 16px; border-radius:6px;
+      text-transform:uppercase; transition:all .25s;
+    }
+    .sec-link:hover { color:var(--pink2); border-color:rgba(232,64,154,0.3); }
+
+    .films-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(148px,1fr));
+      gap:16px;
+    }
+    .f-card {
+      border-radius:10px; overflow:hidden;
+      background:var(--card); border:1px solid var(--border);
+      transition:all .35s cubic-bezier(.16,1,.3,1);
+      position:relative; animation:fadeUp .5s both;
+    }
+    .f-card:hover {
+      transform:translateY(-10px);
+      border-color:rgba(232,64,154,0.22);
+      box-shadow:0 24px 52px rgba(0,0,0,0.65);
+    }
+    .f-card img { width:100%; aspect-ratio:2/3; object-fit:cover; display:block; transition:transform .4s; }
+    .f-card:hover img { transform:scale(1.06); }
+    .f-overlay {
+      position:absolute; inset:0;
+      background:linear-gradient(to top,rgba(14,11,20,.97) 0%,rgba(14,11,20,.12) 55%,transparent 100%);
+      opacity:0; transition:opacity .35s;
+      padding:14px; display:flex; flex-direction:column; justify-content:flex-end;
+    }
+    .f-card:hover .f-overlay { opacity:1; }
+    .f-title { font-family:'Manrope',sans-serif; font-weight:700; font-size:13px; color:var(--white); margin-bottom:6px; line-height:1.3; }
+    .f-badge {
+      display:inline-flex; align-items:center; gap:4px;
+      background:var(--pink-dim); border:1px solid rgba(232,64,154,0.25);
+      border-radius:4px; padding:2px 8px;
+      font-family:'Fira Code',monospace; font-size:9px; color:var(--pink2);
+    }
+    .f-footer { padding:9px 12px; border-top:1px solid var(--border); }
+    .f-name { font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+    .f-card:nth-child(1){animation-delay:.03s}.f-card:nth-child(2){animation-delay:.06s}
+    .f-card:nth-child(3){animation-delay:.09s}.f-card:nth-child(4){animation-delay:.12s}
+    .f-card:nth-child(5){animation-delay:.15s}.f-card:nth-child(6){animation-delay:.18s}
+    .f-card:nth-child(7){animation-delay:.21s}.f-card:nth-child(8){animation-delay:.24s}
+    .f-card:nth-child(9){animation-delay:.27s}.f-card:nth-child(10){animation-delay:.30s}
+
+    .float-btn {
+      position:fixed; bottom:2rem; right:2rem; z-index:500;
+      background:linear-gradient(135deg,var(--pink),var(--orange));
+      color:#fff; border:none; padding:11px 22px; border-radius:50px;
+      font-family:'Manrope',sans-serif; font-weight:700; font-size:12px;
+      text-decoration:none; display:flex; align-items:center; gap:8px;
+      box-shadow:0 8px 28px var(--pink-glow);
+      transition:all .3s; animation:floatBob 3s ease-in-out infinite;
+    }
+    .float-btn:hover { color:#fff; transform:translateY(-3px); animation:none; box-shadow:0 14px 36px var(--pink-glow); }
+    @keyframes floatBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+
+    footer { border-top:1px solid var(--border); padding:2rem 0; text-align:center; }
+    .f-text { font-family:'Fira Code',monospace; font-size:10px; letter-spacing:1px; color:var(--muted); }
+    .f-text .pink { color:var(--pink2); }
+    .f-text .orange { color:var(--orange2); }
+
+    ::-webkit-scrollbar { width:4px; }
+    ::-webkit-scrollbar-track { background:var(--bg); }
+    ::-webkit-scrollbar-thumb { background:var(--muted2); border-radius:2px; }
+    ::-webkit-scrollbar-thumb:hover { background:var(--pink); }
+
+    @media(max-width:768px) {
+      .navbar { padding:0 1.2rem; }
+      .films-grid { grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:12px; }
+      .float-btn span { display:none; }
+      .float-btn { padding:11px 14px; }
+      .hero-stats { gap:2rem; }
+    }
+    @media(max-width:480px) { .films-grid { grid-template-columns:repeat(2,1fr); } }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a class="nav-logo" href="/">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+        <path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/>
+      </svg>
+    </div>
+    <span class="logo-wordmark">
+      <span class="r">Cinematic</span><span class="f">AI</span>
+    </span>
+  </a>
+  <div class="nav-links">
+    <a href="/chat" class="nav-btn-ghost">🎬 MovieAgent</a>
+    <a href="/recommend" class="nav-btn">Discover →</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-radial"></div>
+  <div class="hero-grid"></div>
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="badge-dot"></span>
+      AI Powered · 4800+ Films · Premium Access
+    </div>
+    <h1 class="hero-h1">
+      <span class="word-rec">CinematicAI</span>
+      <span class="word-film">Discovery</span>
+    </h1>
+    <p class="hero-sub">
+      The Ultimate AI Movie Discovery Platform.<br>
+      Explore 4,800+ titles through our <strong>Smart Search</strong> or chat with the
+      <strong>MovieAgent</strong> for a personalized recommendation.
+    </p>
+    <div class="hero-ctas">
+      <a href="/recommend" class="hero-cta">
+        Find My Film
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+      <a href="/chat" class="hero-cta-ghost">
+        🎬 Chat with MovieAgent
+      </a>
+    </div>
+    <div class="hero-stats">
+      <div><div class="stat-n">4.8K</div><div class="stat-l">Films</div></div>
+      <div><div class="stat-n">AI</div><div class="stat-l">Engine</div></div>
+      <div><div class="stat-n">100%</div><div class="stat-l">Free</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="films-sec">
+  <div class="container-fluid px-4">
+    <div class="sec-head">
+      <div><div class="sec-title">Browse Films</div></div>
+      <a href="/recommend" class="sec-link">Get Recommendations →</a>
+    </div>
+    <div class="films-grid">
+      {% for movie in movies %}
+      <div class="f-card">
+        <img src="{{ movie.poster }}" alt="{{ movie.title }}" loading="lazy"/>
+        <div class="f-overlay">
+          <div class="f-title">{{ movie.title }}</div>
+          <div class="f-badge">★ AI Pick</div>
+        </div>
+        <div class="f-footer"><div class="f-name">{{ movie.title }}</div></div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<a href="/chat" class="float-btn">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+  <span>Chat with MovieAgent</span>
+</a>
+
+<footer>
+  <div class="container">
+    <p class="f-text">
+      Built with <span class="pink">♥</span> by
+      <span class="orange">Muhammad Owais Zafar</span>
+      &nbsp;·&nbsp; CinematicAI © 2025 &nbsp;·&nbsp; All Rights Reserved
+    </p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

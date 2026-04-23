@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CinematicAI — Find Your Match</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Bebas+Neue&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:        #0e0b14;
+      --bg2:       #130f1e;
+      --surface:   #1a1528;
+      --card:      #1e1930;
+      --card2:     #241e38;
+      --border:    rgba(255,255,255,0.06);
+      --border2:   rgba(255,255,255,0.11);
+      --pink:      #e8409a;
+      --pink2:     #f472b6;
+      --pink-dim:  rgba(232,64,154,0.12);
+      --pink-glow: rgba(232,64,154,0.25);
+      --orange:    #f97316;
+      --orange2:   #fb923c;
+      --orange-dim:rgba(249,115,22,0.1);
+      --green:     #34d399;
+      --green-dim: rgba(52,211,153,0.1);
+      --red:       #f87171;
+      --red-dim:   rgba(248,113,113,0.1);
+      --white:     #f5f0ff;
+      --muted:     #6b6478;
+      --muted2:    #2c2640;
+      --text:      #ddd6f0;
+    }
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    html { scroll-behavior:smooth; }
+    body {
+      background:var(--bg); color:var(--text);
+      font-family:'Manrope',sans-serif;
+      overflow-x:hidden; min-height:100vh;
+    }
+    body::after {
+      content:''; position:fixed; inset:0;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events:none; z-index:9990;
+    }
+
+    /* NAVBAR */
+    .navbar {
+      position:fixed; top:0; left:0; right:0; z-index:1000;
+      height:62px; background:rgba(14,11,20,0.88);
+      backdrop-filter:blur(22px); border-bottom:1px solid var(--border);
+      display:flex; align-items:center; justify-content:space-between; padding:0 2.5rem;
+    }
+    .nav-logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
+    .logo-icon {
+      width:34px; height:34px; border-radius:8px;
+      background:linear-gradient(135deg,var(--pink),var(--orange));
+      display:flex; align-items:center; justify-content:center;
+      box-shadow:0 0 16px var(--pink-glow); flex-shrink:0;
+    }
+    .logo-icon svg { width:17px; height:17px; }
+    .logo-wordmark { font-family:'Manrope',sans-serif; font-weight:800; font-size:17px; letter-spacing:-0.2px; }
+    .logo-wordmark .r { color:var(--pink2); }
+    .logo-wordmark .f { color:var(--orange2); }
+    .nav-right { display:flex; align-items:center; gap:10px; }
+    .nav-back {
+      display:flex; align-items:center; gap:7px;
+      color:var(--muted); text-decoration:none;
+      font-family:'Fira Code',monospace; font-size:10px; letter-spacing:1px;
+      text-transform:uppercase; transition:color .2s;
+    }
+    .nav-back:hover { color:var(--pink2); }
+    .nav-chat-btn {
+      font-family:'Fira Code',monospace; font-size:10px; letter-spacing:1px;
+      text-decoration:none; color:var(--text);
+      border:1px solid var(--border2);
+      padding:8px 16px; border-radius:6px;
+      transition:all .2s; text-transform:uppercase;
+    }
+    .nav-chat-btn:hover { color:var(--pink2); border-color:rgba(232,64,154,0.4); }
+
+    /* PAGE LAYOUT */
+    .page-wrap { padding-top:62px; min-height:100vh; display:flex; flex-direction:column; }
+
+    /* PAGE HERO */
+    .page-hero { padding:4rem 0 2.5rem; position:relative; overflow:hidden; }
+    .page-hero-bg {
+      position:absolute; inset:0;
+      background:
+        radial-gradient(ellipse 70% 100% at 50% 0%, rgba(180,30,80,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 60% at 85% 50%, rgba(110,30,160,0.09) 0%, transparent 55%);
+    }
+    .page-grid {
+      position:absolute; inset:0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);
+      background-size:72px 72px;
+    }
+    .page-hero-inner { position:relative; z-index:2; }
+    .pg-title {
+      font-family:'Manrope',sans-serif; font-weight:800;
+      font-size:clamp(2.8rem,7vw,5.5rem);
+      line-height:.93; letter-spacing:-1.5px;
+      animation:fadeUp .5s .2s both;
+    }
+    .pg-title .t1 { display:block; color:var(--white); }
+    .pg-title .t2 {
+      display:block;
+      background:linear-gradient(100deg,var(--pink) 0%,var(--orange) 70%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .pg-sub {
+      font-size:.95rem; color:var(--muted); margin-top:1rem;
+      font-weight:400; animation:fadeUp .5s .3s both;
+    }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
+
+    /* SEARCH SECTION */
+    .search-section { padding:2.5rem 0 4rem; animation:fadeUp .5s .4s both; }
+    .search-card {
+      background:var(--card); border:1px solid var(--border2);
+      border-radius:12px; padding:2rem;
+    }
+    .s-label {
+      font-family:'Fira Code',monospace; font-size:9px; letter-spacing:2px;
+      color:var(--muted); text-transform:uppercase; margin-bottom:12px;
+    }
+    .input-outer { position:relative; }
+    .search-icon {
+      position:absolute; left:14px; top:50%; transform:translateY(-50%);
+      color:var(--pink2); pointer-events:none;
+    }
+    #movieSearch {
+      width:100%; background:var(--card2); border:1px solid var(--border2);
+      border-radius:8px; padding:14px 44px;
+      color:var(--text); font-size:15px;
+      font-family:'Manrope',sans-serif; outline:none; transition:all .3s;
+    }
+    #movieSearch::placeholder { color:var(--muted); }
+    #movieSearch:focus {
+      border-color:var(--pink);
+      box-shadow:0 0 0 3px rgba(232,64,154,0.12), 0 8px 30px rgba(0,0,0,0.4);
+    }
+    .clear-btn {
+      position:absolute; right:12px; top:50%; transform:translateY(-50%);
+      background:none; border:none; color:var(--muted); font-size:16px;
+      cursor:pointer; padding:4px 8px; line-height:1; display:none; transition:color .2s;
+    }
+    .clear-btn:hover { color:var(--red); }
+    .clear-btn.show { display:block; }
+
+    .dd-wrap {
+      display:none; margin-top:8px;
+      border:1px solid var(--border2); border-radius:8px;
+      overflow:hidden; background:var(--card2);
+    }
+    .dd-wrap.open { display:block; }
+    .dd-header {
+      padding:7px 14px; border-bottom:1px solid var(--border);
+      font-family:'Fira Code',monospace; font-size:8px; letter-spacing:1.5px;
+      color:var(--muted); text-transform:uppercase;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .dd-scroll { max-height:220px; overflow-y:auto; }
+    .dd-scroll::-webkit-scrollbar { width:3px; }
+    .dd-scroll::-webkit-scrollbar-track { background:transparent; }
+    .dd-scroll::-webkit-scrollbar-thumb { background:var(--muted2); border-radius:2px; }
+    .dd-item {
+      padding:10px 16px; font-size:13px; font-family:'Manrope',sans-serif;
+      color:var(--text); cursor:pointer; transition:background .14s;
+      border-bottom:1px solid var(--border);
+    }
+    .dd-item:last-child { border-bottom:none; }
+    .dd-item:hover, .dd-item.hi { background:var(--pink-dim); color:var(--pink2); }
+    .dd-empty {
+      padding:16px; font-family:'Fira Code',monospace;
+      font-size:11px; color:var(--muted); text-align:center;
+    }
+
+    .sel-chip {
+      display:none; align-items:center; gap:8px;
+      margin-top:8px;
+      background:var(--pink-dim); border:1px solid rgba(232,64,154,0.22);
+      border-radius:7px; padding:10px 14px;
+      font-family:'Fira Code',monospace; font-size:11px; color:var(--pink2);
+    }
+    .sel-chip.show { display:flex; }
+    .chip-x { margin-left:auto; cursor:pointer; color:var(--muted); font-size:14px; transition:color .2s; }
+    .chip-x:hover { color:var(--red); }
+
+    .err-box {
+      display:flex; align-items:center; gap:10px; margin-top:8px;
+      background:var(--red-dim); border:1px solid rgba(248,113,113,0.2);
+      border-radius:7px; padding:12px 14px;
+      color:var(--red); font-family:'Fira Code',monospace; font-size:11px;
+    }
+
+    .s-divider { height:1px; background:var(--border); margin:1.5rem 0; }
+
+    .submit-btn {
+      width:100%;
+      background:linear-gradient(135deg,var(--pink),var(--orange));
+      color:#fff; border:none; padding:15px; border-radius:8px;
+      font-family:'Manrope',sans-serif; font-weight:700; font-size:13px; letter-spacing:.5px;
+      transition:all .3s; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; gap:10px;
+      box-shadow:0 6px 24px var(--pink-glow);
+    }
+    .submit-btn:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 12px 36px var(--pink-glow); }
+    .submit-btn:disabled { opacity:.35; cursor:not-allowed; }
+
+    /* RESULTS */
+    .results-section { padding:1rem 0 6rem; flex:1; }
+    .r-title { font-family:'Manrope',sans-serif; font-weight:800; font-size:clamp(1.8rem,4vw,2.8rem); color:var(--white); line-height:1.1; margin-bottom:2.5rem; }
+    .r-title span {
+      background:linear-gradient(90deg,var(--pink2),var(--orange2));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+
+    .results-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(185px,1fr));
+      gap:20px;
+    }
+    .r-card {
+      border-radius:10px; overflow:hidden;
+      background:var(--card); border:1px solid var(--border);
+      transition:all .35s cubic-bezier(.16,1,.3,1);
+      position:relative; animation:fadeUp .5s both;
+    }
+    .r-card:nth-child(1){animation-delay:.08s}.r-card:nth-child(2){animation-delay:.16s}
+    .r-card:nth-child(3){animation-delay:.24s}.r-card:nth-child(4){animation-delay:.32s}
+    .r-card:nth-child(5){animation-delay:.40s}
+    .r-card:hover {
+      transform:translateY(-10px);
+      border-color:rgba(232,64,154,0.2);
+      box-shadow:0 24px 55px rgba(0,0,0,0.7);
+    }
+    .r-rank {
+      position:absolute; top:10px; left:10px;
+      width:28px; height:28px;
+      background:rgba(14,11,20,0.9);
+      border:1px solid rgba(232,64,154,0.35);
+      border-radius:6px; display:flex; align-items:center; justify-content:center;
+      font-family:'Bebas Neue',sans-serif; font-size:15px; color:var(--pink2);
+      z-index:2; backdrop-filter:blur(8px);
+    }
+    .r-img { width:100%; aspect-ratio:2/3; object-fit:cover; display:block; transition:transform .4s; }
+    .r-card:hover .r-img { transform:scale(1.06); }
+    .r-overlay {
+      position:absolute; inset:0;
+      background:linear-gradient(to top,rgba(14,11,20,.97) 0%,rgba(14,11,20,.1) 55%,transparent 100%);
+      display:flex; flex-direction:column; justify-content:flex-end; padding:16px;
+    }
+    .r-name { font-family:'Manrope',sans-serif; font-weight:700; font-size:14px; color:var(--white); line-height:1.3; margin-bottom:8px; }
+    .r-badge {
+      display:inline-flex; align-items:center; gap:5px;
+      background:var(--green-dim); border:1px solid rgba(52,211,153,0.2);
+      border-radius:4px; padding:3px 9px;
+      font-family:'Fira Code',monospace; font-size:8px; color:var(--green); letter-spacing:1px;
+    }
+
+    footer { border-top:1px solid var(--border); padding:2rem 0; text-align:center; }
+    .f-text { font-family:'Fira Code',monospace; font-size:10px; letter-spacing:1px; color:var(--muted); }
+    .f-text .pink { color:var(--pink2); }
+    .f-text .orange { color:var(--orange2); }
+
+    ::-webkit-scrollbar { width:4px; }
+    ::-webkit-scrollbar-track { background:var(--bg); }
+    ::-webkit-scrollbar-thumb { background:var(--muted2); border-radius:2px; }
+    ::-webkit-scrollbar-thumb:hover { background:var(--pink); }
+
+    @media(max-width:768px) {
+      .navbar { padding:0 1.2rem; }
+      .search-card { padding:1.25rem; }
+      .results-grid { grid-template-columns:repeat(2,1fr); gap:14px; }
+    }
+    @media(max-width:480px) { .results-grid { grid-template-columns:repeat(2,1fr); } }
+  </style>
+</head>
+<body>
+
+<script id="movies-data" type="application/json">{{ all_movies | tojson }}</script>
+
+<nav class="navbar">
+  <a class="nav-logo" href="/">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+        <path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/>
+      </svg>
+    </div>
+    <span class="logo-wordmark">
+      <span class="r">Cinematic</span><span class="f">AI</span>
+    </span>
+  </a>
+  <div class="nav-right">
+    <a href="/chat" class="nav-chat-btn">🎬 MovieAgent</a>
+    <a href="/" class="nav-back">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Back
+    </a>
+  </div>
+</nav>
+
+<div class="page-wrap">
+
+  <section class="page-hero">
+    <div class="page-hero-bg"></div>
+    <div class="page-grid"></div>
+    <div class="container page-hero-inner">
+      <h1 class="pg-title">
+        <span class="t1">Find Your</span>
+        <span class="t2">Match</span>
+      </h1>
+      <p class="pg-sub">Pick a film you love — our AI finds what to watch next.</p>
+    </div>
+  </section>
+
+  <section class="search-section">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-7 col-md-9">
+          <div class="search-card">
+            <div class="s-label">Search or type a movie title</div>
+            <form method="POST" id="recForm">
+              <input type="hidden" name="movie" id="hiddenMovie"/>
+              <div class="input-outer">
+                <span class="search-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                </span>
+                <input type="text" id="movieSearch" placeholder="e.g. Inception, The Dark Knight, Parasite…" autocomplete="off"/>
+                <button type="button" class="clear-btn" id="clearBtn">✕</button>
+              </div>
+              <div class="dd-wrap" id="ddWrap">
+                <div class="dd-header">
+                  <span id="ddCount">Results</span>
+                  <span>↑↓ to browse</span>
+                </div>
+                <div class="dd-scroll" id="ddList"></div>
+              </div>
+              <div class="sel-chip" id="chip">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span id="chipText"></span>
+                <span class="chip-x" id="chipX">✕</span>
+              </div>
+              {% if error %}
+              <div class="err-box">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                {{ error }}
+              </div>
+              {% endif %}
+              <div class="s-divider"></div>
+              <button type="submit" class="submit-btn" id="submitBtn" disabled>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                Analyse &amp; Recommend
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {% if movies %}
+  <section class="results-section" id="results">
+    <div class="container">
+      <div class="r-title">You'll Love <span>These Too</span></div>
+      <div class="results-grid">
+        {% for movie, poster in movies %}
+        <div class="r-card">
+          <div class="r-rank">#{{ loop.index }}</div>
+          <img class="r-img" src="{{ poster }}" alt="{{ movie }}" loading="lazy"/>
+          <div class="r-overlay">
+            <div class="r-name">{{ movie }}</div>
+            <div class="r-badge">★ AI Matched</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  <footer>
+    <div class="container">
+      <p class="f-text">
+        Built with <span class="pink">♥</span> by
+        <span class="orange">Hafiz Muhammad Owais Zafar</span>
+        &nbsp;·&nbsp; CinematicAI © 2025 &nbsp;·&nbsp; All Rights Reserved
+      </p>
+    </div>
+  </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const allMovies = JSON.parse(document.getElementById('movies-data').textContent);
+  const inp       = document.getElementById('movieSearch');
+  const ddWrap    = document.getElementById('ddWrap');
+  const ddList    = document.getElementById('ddList');
+  const ddCount   = document.getElementById('ddCount');
+  const hidden    = document.getElementById('hiddenMovie');
+  const chip      = document.getElementById('chip');
+  const chipText  = document.getElementById('chipText');
+  const chipX     = document.getElementById('chipX');
+  const clearBtn  = document.getElementById('clearBtn');
+  const submitBtn = document.getElementById('submitBtn');
+  let selected    = '';
+
+  function renderDD(q) {
+    const filtered = q
+      ? allMovies.filter(m => m.toLowerCase().includes(q.toLowerCase())).slice(0, 80)
+      : allMovies.slice(0, 50);
+    ddList.innerHTML = '';
+    ddCount.textContent = filtered.length ? `${filtered.length} result${filtered.length !== 1 ? 's' : ''}` : 'No matches';
+    if (!filtered.length) {
+      const d = document.createElement('div');
+      d.className = 'dd-empty';
+      d.textContent = 'No films found — try a different title.';
+      ddList.appendChild(d);
+    } else {
+      filtered.forEach(m => {
+        const d = document.createElement('div');
+        d.className = 'dd-item';
+        d.textContent = m;
+        d.addEventListener('mousedown', () => pickMovie(m));
+        ddList.appendChild(d);
+      });
+    }
+    ddWrap.classList.add('open');
+  }
+
+  function pickMovie(m) {
+    selected = m; hidden.value = m; inp.value = m;
+    chipText.textContent = m;
+    chip.classList.add('show');
+    clearBtn.classList.add('show');
+    submitBtn.disabled = false;
+    ddWrap.classList.remove('open');
+  }
+
+  function clearAll() {
+    selected = ''; hidden.value = ''; inp.value = '';
+    chip.classList.remove('show');
+    clearBtn.classList.remove('show');
+    submitBtn.disabled = true;
+    ddWrap.classList.remove('open');
+    inp.focus();
+  }
+
+  inp.addEventListener('focus', () => renderDD(inp.value));
+  inp.addEventListener('input', () => {
+    if (inp.value !== selected) { selected = ''; hidden.value = ''; submitBtn.disabled = true; chip.classList.remove('show'); }
+    clearBtn.classList.toggle('show', inp.value.length > 0);
+    renderDD(inp.value);
+  });
+  inp.addEventListener('blur', () => setTimeout(() => ddWrap.classList.remove('open'), 200));
+  clearBtn.addEventListener('click', clearAll);
+  chipX.addEventListener('click', clearAll);
+
+  document.getElementById('recForm').addEventListener('submit', function(e) {
+    if (!hidden.value) { e.preventDefault(); inp.focus(); return; }
+    sessionStorage.setItem('scrollToResults', '1');
+  });
+  window.addEventListener('DOMContentLoaded', () => {
+    const results = document.getElementById('results');
+    if (results && sessionStorage.getItem('scrollToResults')) {
+      sessionStorage.removeItem('scrollToResults');
+      setTimeout(() => results.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
+    }
+  });
+</script>
+</body>
+</html>
