@@ -100,14 +100,6 @@ Personalized-Recommendation-System/
 
 ---
 
-## Live Demo
-
-<p align="center">
-  <a href="https://your-deploy-link.com">
-    <img src="https://img.shields.io/badge/Try_Cinematic_AI-Live_Demo-black?style=for-the-badge"/>
-  </a>
-</p>
-
 Feel free to explore, break it, and drop your feedback in the issues — all suggestions welcome.
 
 ---
