@@ -13,6 +13,11 @@
   <strong>A conversational AI movie agent — BERT retrieves, LLaMA selects, Flask serves.</strong>
 </p>
 
+<p align="center">
+  <a href="https://your-deploy-link.com"><strong>Live Demo →</strong></a>
+</p>
+
+---
 
 ## How It Works
 
@@ -106,5 +111,5 @@ Feel free to explore, break it, and drop your feedback in the issues — all sug
 ---
 
 <p align="center">
-  Built by <a href="https://github.com/OwaisZafar01">Owais Zafar</a>
+  Built by <a href="https://github.com/OwaisZafar01">Muhammad Owais Zafar</a>
 </p>
