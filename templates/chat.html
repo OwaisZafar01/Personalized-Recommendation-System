@@ -4,73 +4,71 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>CinematicAI — MovieAgent</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Bebas+Neue&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <style>
     :root {
-      --bg:          #0e0b14;
-      --bg2:         #130f1e;
-      --surface:     #1a1528;
-      --card:        #1e1930;
-      --card2:       #241e38;
-      --bubble-user: #2d1f42;
-      --bubble-bot:  #1a1528;
-      --border:      rgba(255,255,255,0.06);
-      --border2:     rgba(255,255,255,0.11);
-      --pink:        #e8409a;
-      --pink2:       #f472b6;
-      --pink-dim:    rgba(232,64,154,0.12);
-      --pink-glow:   rgba(232,64,154,0.25);
+      --bg:          #0a0806;
+      --bg2:         #0f0c09;
+      --surface:     #141009;
+      --card:        #181209;
+      --card2:       #1e1610;
+      --bubble-user: #261a0c;
+      --bubble-bot:  #141009;
+      --border:      rgba(255,160,50,0.08);
+      --border2:     rgba(255,160,50,0.15);
       --orange:      #f97316;
       --orange2:     #fb923c;
-      --purple:      #a855f7;
-      --white:       #f5f0ff;
-      --muted:       #6b6478;
-      --muted2:      #2c2640;
-      --text:        #ddd6f0;
+      --orange3:     #fbbf24;
+      --amber:       #d97706;
+      --glow:        rgba(249,115,22,0.22);
+      --glow2:       rgba(249,115,22,0.08);
+      --white:       #fef3e2;
+      --muted:       #5c4a32;
+      --muted2:      #2a1f12;
+      --text:        #e8d5b7;
       --green:       #34d399;
-      --input-bg:    #160f24;
+      --input-bg:    #0d0a06;
     }
     *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
     html, body { height:100%; overflow:hidden; }
-    body {
-      background:var(--bg); color:var(--text);
-      font-family:'Manrope', sans-serif;
-    }
-    body::after {
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; }
+
+    body::before {
       content:''; position:fixed; inset:0;
-      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-      pointer-events:none; z-index:9990;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events:none; z-index:9999;
     }
 
+    .hex-bg {
+      position:fixed; inset:0; z-index:0; opacity:0.04;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='104'%3E%3Cpolygon points='30,2 58,17 58,47 30,62 2,47 2,17' fill='none' stroke='%23f97316' stroke-width='0.8'/%3E%3Cpolygon points='30,62 58,77 58,107 30,122 2,107 2,77' fill='none' stroke='%23f97316' stroke-width='0.8'/%3E%3C/svg%3E");
+      pointer-events:none;
+    }
     .app-shell {
-      display:flex; flex-direction:column;
-      height:100vh; max-width:900px;
-      margin:0 auto; position:relative;
+      display:flex; flex-direction:column; height:100vh;
+      max-width:900px; margin:0 auto; position:relative; z-index:1;
     }
-
     .chat-header {
-      flex-shrink:0; height:64px;
-      background:rgba(14,11,20,0.92);
-      backdrop-filter:blur(24px);
-      border-bottom:1px solid var(--border);
+      flex-shrink:0; min-height:66px;
+      background:rgba(10,8,6,0.94); backdrop-filter:blur(28px);
+      border-bottom:1px solid var(--border2);
       display:flex; align-items:center; justify-content:space-between;
-      padding:0 1.5rem; z-index:100;
+      padding:0 1.6rem; z-index:100; gap:8px; flex-wrap:wrap;
     }
-    .header-left { display:flex; align-items:center; gap:12px; }
+    .header-left { display:flex; align-items:center; gap:10px; min-width:0; flex-shrink:0; }
     .back-link {
       display:flex; align-items:center; gap:6px;
       color:var(--muted); text-decoration:none;
-      font-family:'Fira Code',monospace; font-size:10px; letter-spacing:1px;
-      text-transform:uppercase; transition:color .2s;
+      font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1px;
+      text-transform:uppercase; transition:color .2s; white-space:nowrap;
     }
-    .back-link:hover { color:var(--pink2); }
+    .back-link:hover { color:var(--orange2); }
 
     .bot-avatar {
       width:40px; height:40px; border-radius:12px; flex-shrink:0;
-      background:linear-gradient(135deg, var(--pink), var(--orange));
+      background:linear-gradient(135deg, var(--orange), var(--amber));
       display:flex; align-items:center; justify-content:center;
-      box-shadow:0 0 18px var(--pink-glow); position:relative;
+      box-shadow:0 0 20px var(--glow); position:relative;
     }
     .bot-avatar svg { width:18px; height:18px; }
     .status-dot {
@@ -79,87 +77,69 @@
       background:var(--green); border:2px solid var(--bg);
       animation:pulse-dot 2s infinite;
     }
-    @keyframes pulse-dot {
-      0%,100%{ box-shadow:0 0 0 0 rgba(52,211,153,0.5); }
-      50%{ box-shadow:0 0 0 4px rgba(52,211,153,0); }
-    }
-    .bot-info { line-height:1.2; }
-    .bot-name { font-family:'Manrope',sans-serif; font-weight:800; font-size:15px; color:var(--white); letter-spacing:-0.3px; }
-    .bot-status { font-family:'Fira Code',monospace; font-size:9px; letter-spacing:1.5px; color:var(--green); text-transform:uppercase; }
+    @keyframes pulse-dot { 0%,100%{box-shadow:0 0 0 0 rgba(52,211,153,0.5)} 50%{box-shadow:0 0 0 4px rgba(52,211,153,0)} }
 
-    .header-right { display:flex; align-items:center; gap:10px; }
+    .bot-info { line-height:1.25; min-width:0; }
+    .bot-name { font-family:'Syne',sans-serif; font-weight:800; font-size:15px; color:var(--white); letter-spacing:-0.2px; white-space:nowrap; }
+    .bot-status { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:1.5px; color:var(--green); text-transform:uppercase; }
+
+    .header-right { display:flex; align-items:center; gap:8px; flex-shrink:0; }
     .header-badge {
-      font-family:'Fira Code',monospace; font-size:8px; letter-spacing:1.5px;
+      font-family:'DM Mono',monospace; font-size:8px; letter-spacing:1.5px;
       text-transform:uppercase;
-      background:var(--pink-dim); border:1px solid rgba(232,64,154,0.22);
-      color:var(--pink2); border-radius:5px; padding:4px 10px;
+      background:rgba(249,115,22,0.08); border:1px solid rgba(249,115,22,0.2);
+      color:var(--orange2); border-radius:5px; padding:4px 10px;
+      white-space:nowrap;
     }
     .clear-chat-btn {
       background:none; border:1px solid var(--border2);
-      border-radius:6px; padding:6px 10px; color:var(--muted);
-      font-family:'Fira Code',monospace; font-size:9px; letter-spacing:1px;
-      cursor:pointer; transition:all .2s; text-transform:uppercase;
+      border-radius:6px; padding:7px 12px; color:var(--muted);
+      font-family:'DM Mono',monospace; font-size:9px; letter-spacing:1px;
+      cursor:pointer; transition:all .2s; text-transform:uppercase; white-space:nowrap;
     }
-    .clear-chat-btn:hover { color:var(--pink2); border-color:rgba(232,64,154,0.3); }
-
+    .clear-chat-btn:hover { color:var(--orange2); border-color:rgba(249,115,22,0.3); }
     .messages-area {
       flex:1; overflow-y:auto; overflow-x:hidden;
-      padding:1.5rem 1.5rem 1rem;
+      padding:1.6rem 1.6rem 1rem;
       display:flex; flex-direction:column; gap:0;
       scroll-behavior:smooth;
+      -webkit-overflow-scrolling:touch;
     }
     .messages-area::-webkit-scrollbar { width:3px; }
     .messages-area::-webkit-scrollbar-track { background:transparent; }
     .messages-area::-webkit-scrollbar-thumb { background:var(--muted2); border-radius:2px; }
 
-    .msg-row {
-      display:flex; margin-bottom:4px;
-      animation: msgIn .3s cubic-bezier(.16,1,.3,1) both;
-    }
-    @keyframes msgIn {
-      from { opacity:0; transform:translateY(12px); }
-      to   { opacity:1; transform:translateY(0); }
-    }
+    .msg-row { display:flex; margin-bottom:4px; animation:msgIn .3s cubic-bezier(.16,1,.3,1) both; }
+    @keyframes msgIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
     .msg-row.user { justify-content:flex-end; }
     .msg-row.bot  { justify-content:flex-start; }
-    .msg-row + .msg-row.user  { margin-top:2px; }
-    .msg-row + .msg-row.bot   { margin-top:2px; }
-    .msg-row.bot  + .msg-row.user { margin-top:12px; }
-    .msg-row.user + .msg-row.bot  { margin-top:12px; }
+    .msg-row.bot + .msg-row.user { margin-top:12px; }
+    .msg-row.user + .msg-row.bot { margin-top:12px; }
 
-    .user-msg-wrap {
-      display: inline-flex; flex-direction: column;
-      align-items: flex-end; max-width: 72%;
-    }
-    .bot-msg-wrap {
-      display: inline-flex; flex-direction: column;
-      align-items: flex-start; max-width: 72%;
-    }
-    .bubble {
-      display: inline-block; padding: 10px 16px;
-      border-radius: 18px; font-size: 14px; line-height: 1.6;
-      position: relative; word-break: break-word; white-space: normal;
-    }
+    .user-msg-wrap { display:inline-flex; flex-direction:column; align-items:flex-end; max-width:80%; }
+    .bot-msg-wrap  { display:inline-flex; flex-direction:column; align-items:flex-start; max-width:80%; }
+
+    .bubble { display:inline-block; padding:11px 17px; border-radius:18px; font-size:14px; line-height:1.65; position:relative; word-break:break-word; }
     .bubble.user {
-      background: linear-gradient(135deg, rgba(232,64,154,0.28), rgba(168,85,247,0.22));
-      border: 1px solid rgba(232,64,154,0.25);
-      border-bottom-right-radius: 4px; color: var(--white);
+      background:linear-gradient(135deg, rgba(249,115,22,0.22), rgba(217,119,6,0.16));
+      border:1px solid rgba(249,115,22,0.22);
+      border-bottom-right-radius:4px; color:var(--white);
     }
     .bubble.bot {
-      background: var(--bubble-bot); border: 1px solid var(--border2);
-      border-bottom-left-radius: 4px; color: var(--text);
+      background:var(--bubble-bot); border:1px solid var(--border2);
+      border-bottom-left-radius:4px; color:var(--text);
     }
     .bubble-time {
-      font-family:'Fira Code',monospace; font-size:8px;
-      color:var(--muted); margin-top:4px;
+      font-family:'DM Mono',monospace; font-size:8px;
+      color:var(--muted); margin-top:5px;
       display:flex; align-items:center; gap:4px;
     }
     .tick { color:var(--green); }
-
-    .movie-cards-row { margin:8px 0 4px; animation: msgIn .35s .1s cubic-bezier(.16,1,.3,1) both; }
+    .movie-cards-row { margin:8px 0 4px; animation:msgIn .35s .1s cubic-bezier(.16,1,.3,1) both; }
     .movie-cards-scroll {
       display:flex; gap:12px; overflow-x:auto; padding-bottom:8px;
       scroll-snap-type:x mandatory;
+      -webkit-overflow-scrolling:touch;
     }
     .movie-cards-scroll::-webkit-scrollbar { height:3px; }
     .movie-cards-scroll::-webkit-scrollbar-track { background:transparent; }
@@ -168,118 +148,137 @@
     .m-card {
       flex-shrink:0; width:130px; border-radius:10px; overflow:hidden;
       background:var(--card); border:1px solid var(--border);
-      scroll-snap-align:start; transition:all .3s cubic-bezier(.16,1,.3,1);
+      scroll-snap-align:start; transition:all .3s cubic-bezier(.16,1,.3,1); cursor:pointer;
     }
-    .m-card:hover { transform:translateY(-6px); border-color:rgba(232,64,154,0.3); box-shadow:0 16px 40px rgba(0,0,0,0.7); }
+    .m-card:hover { transform:translateY(-6px); border-color:rgba(249,115,22,0.3); box-shadow:0 16px 40px rgba(0,0,0,0.8); }
     .m-card-img-wrap { position:relative; }
     .m-card img { width:100%; aspect-ratio:2/3; object-fit:cover; display:block; transition:transform .4s; }
     .m-card:hover img { transform:scale(1.06); }
     .m-rank {
       position:absolute; top:7px; left:7px; width:22px; height:22px; border-radius:5px;
-      background:rgba(14,11,20,0.9); border:1px solid rgba(232,64,154,0.35);
+      background:rgba(10,8,6,0.9); border:1px solid rgba(249,115,22,0.35);
       display:flex; align-items:center; justify-content:center;
-      font-family:'Bebas Neue',sans-serif; font-size:12px; color:var(--pink2);
+      font-family:'Syne',sans-serif; font-weight:800; font-size:11px; color:var(--orange2);
       backdrop-filter:blur(8px);
     }
     .m-card-body { padding:8px 10px; }
-    .m-card-title { font-family:'Manrope',sans-serif; font-weight:700; font-size:11px; color:var(--white); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:4px; }
+    .m-card-title { font-family:'Syne',sans-serif; font-weight:700; font-size:11px; color:var(--white); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:4px; }
     .m-card-reason { font-size:9px; color:var(--muted); line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
 
     .typing-row { display:flex; align-items:flex-end; gap:8px; margin-bottom:4px; }
     .typing-bubble {
       background:var(--bubble-bot); border:1px solid var(--border2);
       border-radius:16px; border-bottom-left-radius:4px;
-      padding:12px 16px; display:flex; align-items:center; gap:5px;
+      padding:13px 17px; display:flex; align-items:center; gap:5px;
     }
-    .typing-dot { width:6px; height:6px; border-radius:50%; background:var(--pink); animation:typingBounce 1.2s infinite ease-in-out; }
+    .typing-dot { width:6px; height:6px; border-radius:50%; background:var(--orange); animation:tBounce 1.2s infinite ease-in-out; }
     .typing-dot:nth-child(2){ animation-delay:.2s; }
     .typing-dot:nth-child(3){ animation-delay:.4s; }
-    @keyframes typingBounce { 0%,60%,100%{ transform:translateY(0); opacity:.4; } 30%{ transform:translateY(-6px); opacity:1; } }
+    @keyframes tBounce { 0%,60%,100%{transform:translateY(0);opacity:.4} 30%{transform:translateY(-6px);opacity:1} }
 
     .welcome-screen {
       flex:1; display:flex; flex-direction:column;
       align-items:center; justify-content:center;
-      padding:2rem; text-align:center; pointer-events:none;
+      padding:2rem 1rem; text-align:center; pointer-events:none;
     }
     .welcome-icon {
       width:72px; height:72px; border-radius:20px;
-      background:linear-gradient(135deg, var(--pink), var(--orange));
+      background:linear-gradient(135deg, var(--orange), var(--amber));
       display:flex; align-items:center; justify-content:center;
-      margin:0 auto 1.5rem; box-shadow:0 0 40px var(--pink-glow);
+      margin:0 auto 1.6rem; box-shadow:0 0 50px var(--glow);
       animation:floatIcon 4s ease-in-out infinite;
     }
     .welcome-icon svg { width:32px; height:32px; }
-    @keyframes floatIcon { 0%,100%{ transform:translateY(0) rotate(0deg); } 50%{ transform:translateY(-8px) rotate(3deg); } }
-    .welcome-title { font-family:'Manrope',sans-serif; font-weight:800; font-size:1.8rem; color:var(--white); letter-spacing:-0.5px; margin-bottom:.6rem; }
-    .welcome-title .grad { background:linear-gradient(100deg,var(--pink),var(--orange)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-    .welcome-sub { font-size:.9rem; color:var(--muted); line-height:1.7; max-width:360px; margin:0 auto 1.8rem; }
+    @keyframes floatIcon { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-8px) rotate(2deg)} }
+    .welcome-title { font-family:'Syne',sans-serif; font-weight:800; font-size:clamp(1.4rem,4vw,1.9rem); color:var(--white); letter-spacing:-0.5px; margin-bottom:.6rem; }
+    .welcome-title .grad { background:linear-gradient(100deg,var(--orange),var(--orange3)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .welcome-sub { font-size:clamp(.8rem,2vw,.9rem); color:var(--muted); line-height:1.7; max-width:340px; margin:0 auto 1.8rem; }
     .suggestions { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; pointer-events:all; }
     .sugg-pill {
       background:var(--card); border:1px solid var(--border2);
-      border-radius:50px; padding:8px 16px;
+      border-radius:50px; padding:9px 16px;
       font-size:12px; color:var(--text); cursor:pointer;
-      font-family:'Manrope',sans-serif; font-weight:500; transition:all .25s;
+      font-family:'DM Sans',sans-serif; font-weight:500; transition:all .25s;
     }
-    .sugg-pill:hover { background:var(--pink-dim); border-color:rgba(232,64,154,0.3); color:var(--pink2); transform:translateY(-2px); }
+    .sugg-pill:hover { background:rgba(249,115,22,0.08); border-color:rgba(249,115,22,0.3); color:var(--orange2); transform:translateY(-2px); }
 
     .input-bar {
-      flex-shrink:0; padding:1rem 1.5rem 1.2rem;
-      background:rgba(14,11,20,0.96); backdrop-filter:blur(24px);
+      flex-shrink:0; padding:0.9rem 1.4rem 1.1rem;
+      background:rgba(10,8,6,0.97); backdrop-filter:blur(28px);
       border-top:1px solid var(--border);
     }
     .input-wrap {
       display:flex; align-items:flex-end; gap:10px;
       background:var(--input-bg); border:1px solid var(--border2);
-      border-radius:14px; padding:10px 10px 10px 18px;
+      border-radius:14px; padding:10px 10px 10px 16px;
       transition:border-color .3s, box-shadow .3s;
     }
-    .input-wrap:focus-within { border-color:var(--pink); box-shadow:0 0 0 3px rgba(232,64,154,0.1), 0 8px 30px rgba(0,0,0,0.4); }
+    .input-wrap:focus-within { border-color:var(--orange); box-shadow:0 0 0 3px rgba(249,115,22,0.1),0 8px 30px rgba(0,0,0,0.5); }
     #chatInput {
       flex:1; background:none; border:none; outline:none;
-      color:var(--white); font-size:14px; font-family:'Manrope',sans-serif;
+      color:var(--white); font-size:14px; font-family:'DM Sans',sans-serif;
       resize:none; max-height:120px; min-height:22px; line-height:1.5;
     }
     #chatInput::placeholder { color:var(--muted); }
-    #chatInput::-webkit-scrollbar { width:2px; }
     .send-btn {
-      flex-shrink:0; width:38px; height:38px; border-radius:10px; border:none;
-      background:linear-gradient(135deg, var(--pink), var(--orange));
-      color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center;
-      transition:all .25s; box-shadow:0 4px 14px var(--pink-glow);
+      flex-shrink:0; width:40px; height:40px; border-radius:10px; border:none;
+      background:linear-gradient(135deg, var(--orange), var(--amber));
+      color:#0a0806; cursor:pointer; display:flex; align-items:center; justify-content:center;
+      transition:all .25s; box-shadow:0 4px 16px var(--glow);
     }
-    .send-btn:hover:not(:disabled) { transform:scale(1.08); box-shadow:0 6px 20px var(--pink-glow); }
-    .send-btn:disabled { opacity:.35; cursor:not-allowed; transform:none; }
+    .send-btn:hover:not(:disabled) { transform:scale(1.08); box-shadow:0 6px 24px var(--glow); }
+    .send-btn:disabled { opacity:.3; cursor:not-allowed; transform:none; }
     .send-btn svg { width:16px; height:16px; }
-    .input-hint { font-family:'Fira Code',monospace; font-size:8.5px; letter-spacing:1px; color:var(--muted); text-align:center; margin-top:8px; text-transform:uppercase; }
+    .input-hint { font-family:'DM Mono',monospace; font-size:8.5px; letter-spacing:1px; color:var(--muted); text-align:center; margin-top:7px; text-transform:uppercase; }
 
     ::-webkit-scrollbar { width:3px; }
     ::-webkit-scrollbar-track { background:var(--bg); }
     ::-webkit-scrollbar-thumb { background:var(--muted2); border-radius:2px; }
-    ::-webkit-scrollbar-thumb:hover { background:var(--pink); }
+    ::-webkit-scrollbar-thumb:hover { background:var(--orange); }
 
-    @media(max-width:600px) {
-      .chat-header { padding:0 1rem; }
+    @media (max-width:768px) {
+      .chat-header { padding:0 1rem; min-height:60px; }
       .messages-area { padding:1rem 1rem .8rem; }
-      .input-bar { padding:.8rem 1rem 1rem; }
-      .bubble { font-size:13px; }
+      .input-bar { padding:.7rem 1rem .9rem; }
+      .bubble { font-size:13px; padding:10px 14px; }
+      .user-msg-wrap, .bot-msg-wrap { max-width:88%; }
       .m-card { width:115px; }
       .header-badge { display:none; }
+      .clear-chat-btn { font-size:8px; padding:6px 10px; }
+    }
+
+    @media (max-width:480px) {
+      .back-link span { display:none; }
+      .bot-name { font-size:14px; }
+      .welcome-icon { width:60px; height:60px; border-radius:16px; }
+      .welcome-icon svg { width:26px; height:26px; }
+      .sugg-pill { font-size:11px; padding:8px 13px; }
+      .m-card { width:105px; }
+      .user-msg-wrap, .bot-msg-wrap { max-width:92%; }
+      .input-hint { display:none; }
+    }
+
+    @media (max-width:360px) {
+      .bot-status { display:none; }
+      .clear-chat-btn { display:none; }
+      .suggestions { gap:6px; }
+      .sugg-pill { font-size:10px; padding:7px 11px; }
     }
   </style>
 </head>
 <body>
+<div class="hex-bg"></div>
 
 <div class="app-shell">
-
   <div class="chat-header">
     <div class="header-left">
       <a href="/" class="back-link">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-        Home
+        <span>Home</span>
       </a>
-      <div style="width:1px;height:20px;background:var(--border);margin:0 4px;"></div>
+      <div style="width:1px;height:20px;background:var(--border);margin:0 2px;flex-shrink:0;"></div>
       <div class="bot-avatar">
-        <svg viewBox="0 0 24 24" fill="white"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg>
+        <svg viewBox="0 0 24 24" fill="#0a0806"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg>
         <div class="status-dot"></div>
       </div>
       <div class="bot-info">
@@ -296,13 +295,10 @@
   <div class="messages-area" id="messagesArea">
     <div class="welcome-screen" id="welcomeScreen">
       <div class="welcome-icon">
-        <svg viewBox="0 0 24 24" fill="white"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg>
+        <svg viewBox="0 0 24 24" fill="#0a0806"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg>
       </div>
       <div class="welcome-title">Chat with <span class="grad">MovieAgent</span></div>
-      <p class="welcome-sub">
-        Welcome. I am your <strong>Movie Agent</strong>. Specify your preferred mood, genre, or style,
-        and I will analyze our <strong>library</strong> of 4,800+ titles to find your perfect match.
-      </p>
+      <p class="welcome-sub">Welcome. I am your <strong>Movie Agent</strong>. Specify your preferred mood, genre, or style, and I will analyze our <strong>library</strong> of 4,800+ titles to find your perfect match.</p>
       <div class="suggestions">
         <div class="sugg-pill" onclick="sendSuggestion(this)">🎬 Mind-bending movies like Inception</div>
         <div class="sugg-pill" onclick="sendSuggestion(this)">👻 Horror films from the 90s</div>
@@ -318,471 +314,56 @@
     <div class="input-wrap">
       <textarea id="chatInput" placeholder="Describe your perfect movie..." rows="1" autocomplete="off" spellcheck="true"></textarea>
       <button class="send-btn" id="sendBtn" disabled onclick="sendMessage()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
-        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
       </button>
     </div>
     <div class="input-hint">Enter to send · Shift+Enter for new line</div>
   </div>
-
 </div>
 
 <script>
-  let history = [];
-  let isLoading = false;
-
-  const messagesArea = document.getElementById('messagesArea');
-  const welcomeScreen = document.getElementById('welcomeScreen');
-  const chatInput = document.getElementById('chatInput');
-  const sendBtn = document.getElementById('sendBtn');
-
-  function getTime() {
-    return new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', hour12:true });
-  }
-  function scrollBottom(smooth = true) {
-    messagesArea.scrollTo({ top: messagesArea.scrollHeight, behavior: smooth ? 'smooth' : 'instant' });
-  }
-  function hideWelcome() {
-    if (welcomeScreen && welcomeScreen.isConnected) {
-      welcomeScreen.style.transition = 'opacity .3s';
-      welcomeScreen.style.opacity = '0';
-      setTimeout(() => welcomeScreen.remove(), 300);
-    }
-  }
-
-  chatInput.addEventListener('input', () => {
-    chatInput.style.height = 'auto';
-    chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
-    sendBtn.disabled = !chatInput.value.trim() || isLoading;
-  });
-  chatInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (!sendBtn.disabled) sendMessage(); }
-  });
-
-  function appendUserBubble(text) {
-    const row = document.createElement('div');
-    row.className = 'msg-row user';
-    row.innerHTML = `
-      <div class="user-msg-wrap">
-        <div class="bubble user">${escapeHtml(text)}</div>
-        <div class="bubble-time">${getTime()} <span class="tick">✓✓</span></div>
-      </div>`;
-    messagesArea.appendChild(row);
-    scrollBottom();
-  }
-
-  function appendTyping() {
-    const row = document.createElement('div');
-    row.className = 'typing-row'; row.id = 'typingIndicator';
-    row.innerHTML = `<div class="typing-bubble"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
-    messagesArea.appendChild(row);
-    scrollBottom();
-  }
-
-  function appendBotResponse(reply, movies) {
-    const typing = document.getElementById('typingIndicator');
-    if (typing) typing.remove();
-
-    const row = document.createElement('div');
-    row.className = 'msg-row bot';
-    row.innerHTML = `
-      <div class="bot-msg-wrap">
-        <div class="bubble bot">${escapeHtml(reply)}</div>
-        <div class="bubble-time">${getTime()}</div>
-      </div>`;
-    messagesArea.appendChild(row);
-
-    if (movies && movies.length > 0) {
-      const cardsWrap = document.createElement('div');
-      cardsWrap.className = 'movie-cards-row';
-      const scroll = document.createElement('div');
-      scroll.className = 'movie-cards-scroll';
-      movies.forEach((m, i) => {
-        const card = document.createElement('div');
-        card.className = 'm-card';
-        card.style.cursor = 'pointer';
-        card.onclick = () => openMoviePopup(m.title);
-        card.innerHTML = `
-          <div class="m-card-img-wrap">
-            <img src="${m.poster}" alt="${escapeHtml(m.title)}" loading="lazy" onerror="this.src='https://placehold.co/300x450/1e1930/6b6478?text=No+Poster'"/>
-            <div class="m-rank">#${i+1}</div>
-          </div>
-          <div class="m-card-body">
-            <div class="m-card-title">${escapeHtml(m.title)}</div>
-            <div class="m-card-reason">${escapeHtml(m.reason)}</div>
-          </div>`;
-        scroll.appendChild(card);
-      });
-      cardsWrap.appendChild(scroll);
-      messagesArea.appendChild(cardsWrap);
-    }
-    scrollBottom();
-  }
-
-  function appendError(msg) {
-    const typing = document.getElementById('typingIndicator');
-    if (typing) typing.remove();
-    const row = document.createElement('div');
-    row.className = 'msg-row bot';
-    row.innerHTML = `
-      <div class="bot-msg-wrap">
-        <div class="bubble bot" style="color:#f87171;border-color:rgba(248,113,113,0.2)">⚠ ${escapeHtml(msg)}</div>
-        <div class="bubble-time">${getTime()}</div>
-      </div>`;
-    messagesArea.appendChild(row);
-    scrollBottom();
-  }
-
-  async function sendMessage() {
-    const text = chatInput.value.trim();
-    if (!text || isLoading) return;
-    hideWelcome();
-    isLoading = true; sendBtn.disabled = true;
-    chatInput.value = ''; chatInput.style.height = 'auto';
-    appendUserBubble(text);
-    appendTyping();
-    history.push({ role: 'user', content: text });
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, history: history.slice(0, -1) })
-      });
-      if (!res.ok) throw new Error(`Server error: ${res.status}`);
-      const data = await res.json();
-      appendBotResponse(data.reply, data.movies);
-      history.push({ role: 'assistant', content: JSON.stringify(data) });
-    } catch (err) {
-      appendError('Kuch masla aa gaya. Dobara try karo! (' + err.message + ')');
-    } finally {
-      isLoading = false;
-      sendBtn.disabled = !chatInput.value.trim();
-      chatInput.focus();
-    }
-  }
-
-  function sendSuggestion(el) {
-    chatInput.value = el.textContent.replace(/^[^\s]+\s/, '');
-    sendBtn.disabled = false;
-    sendMessage();
-  }
-
-  function clearChat() {
-    history = [];
-    messagesArea.innerHTML = `
-      <div class="welcome-screen" id="welcomeScreen">
-        <div class="welcome-icon">
-          <svg viewBox="0 0 24 24" fill="white"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg>
-        </div>
-        <div class="welcome-title">Chat with <span class="grad">MovieAgent</span></div>
-        <p class="welcome-sub">Welcome. I am your <strong>Movie Agent</strong>. Specify your preferred mood, genre, or style, and I will find your perfect match from 4,800+ titles.</p>
-        <div class="suggestions">
-          <div class="sugg-pill" onclick="sendSuggestion(this)">🎬 Mind-bending movies like Inception</div>
-          <div class="sugg-pill" onclick="sendSuggestion(this)">👻 Horror films from the 90s</div>
-          <div class="sugg-pill" onclick="sendSuggestion(this)">💕 Romantic movies with a twist ending</div>
-          <div class="sugg-pill" onclick="sendSuggestion(this)">🚀 Best adventurous movies</div>
-          <div class="sugg-pill" onclick="sendSuggestion(this)">😂 Comedy movies to watch with friends</div>
-          <div class="sugg-pill" onclick="sendSuggestion(this)">🏆 Oscar winning dramas</div>
-        </div>
-      </div>`;
-  }
-
-  function escapeHtml(str) {
-    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
+  let history=[],isLoading=false;
+  const messagesArea=document.getElementById('messagesArea'),chatInput=document.getElementById('chatInput'),sendBtn=document.getElementById('sendBtn');
+  function getTime(){return new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true});}
+  function scrollBottom(){messagesArea.scrollTo({top:messagesArea.scrollHeight,behavior:'smooth'});}
+  function hideWelcome(){const w=document.getElementById('welcomeScreen');if(w&&w.isConnected){w.style.transition='opacity .3s';w.style.opacity='0';setTimeout(()=>w.remove(),300);}}
+  chatInput.addEventListener('input',()=>{chatInput.style.height='auto';chatInput.style.height=Math.min(chatInput.scrollHeight,120)+'px';sendBtn.disabled=!chatInput.value.trim()||isLoading;});
+  chatInput.addEventListener('keydown',(e)=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();if(!sendBtn.disabled)sendMessage();}});
+  function appendUserBubble(text){const row=document.createElement('div');row.className='msg-row user';row.innerHTML=`<div class="user-msg-wrap"><div class="bubble user">${escapeHtml(text)}</div><div class="bubble-time">${getTime()} <span class="tick">✓✓</span></div></div>`;messagesArea.appendChild(row);scrollBottom();}
+  function appendTyping(){const row=document.createElement('div');row.className='typing-row';row.id='typingIndicator';row.innerHTML=`<div class="typing-bubble"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;messagesArea.appendChild(row);scrollBottom();}
+  function appendBotResponse(reply,movies){const typing=document.getElementById('typingIndicator');if(typing)typing.remove();const row=document.createElement('div');row.className='msg-row bot';row.innerHTML=`<div class="bot-msg-wrap"><div class="bubble bot">${escapeHtml(reply)}</div><div class="bubble-time">${getTime()}</div></div>`;messagesArea.appendChild(row);if(movies&&movies.length>0){const cw=document.createElement('div');cw.className='movie-cards-row';const sc=document.createElement('div');sc.className='movie-cards-scroll';movies.forEach((m,i)=>{const card=document.createElement('div');card.className='m-card';card.onclick=()=>openMoviePopup(m.title);card.innerHTML=`<div class="m-card-img-wrap"><img src="${m.poster}" alt="${escapeHtml(m.title)}" loading="lazy" onerror="this.src='https://placehold.co/300x450/181209/5c4a32?text=No+Poster'"/><div class="m-rank">#${i+1}</div></div><div class="m-card-body"><div class="m-card-title">${escapeHtml(m.title)}</div><div class="m-card-reason">${escapeHtml(m.reason)}</div></div>`;sc.appendChild(card);});cw.appendChild(sc);messagesArea.appendChild(cw);}scrollBottom();}
+  function appendError(msg){const typing=document.getElementById('typingIndicator');if(typing)typing.remove();const row=document.createElement('div');row.className='msg-row bot';row.innerHTML=`<div class="bot-msg-wrap"><div class="bubble bot" style="color:#f87171;border-color:rgba(248,113,113,0.2)">⚠ ${escapeHtml(msg)}</div><div class="bubble-time">${getTime()}</div></div>`;messagesArea.appendChild(row);scrollBottom();}
+  async function sendMessage(){const text=chatInput.value.trim();if(!text||isLoading)return;hideWelcome();isLoading=true;sendBtn.disabled=true;chatInput.value='';chatInput.style.height='auto';appendUserBubble(text);appendTyping();history.push({role:'user',content:text});try{const res=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text,history:history.slice(0,-1)})});if(!res.ok)throw new Error(`Server error: ${res.status}`);const data=await res.json();appendBotResponse(data.reply,data.movies);history.push({role:'assistant',content:JSON.stringify(data)});}catch(err){appendError('Kuch masla aa gaya. Dobara try karo! ('+err.message+')');}finally{isLoading=false;sendBtn.disabled=!chatInput.value.trim();chatInput.focus();}}
+  function sendSuggestion(el){chatInput.value=el.textContent.replace(/^[^\s]+\s/,'');sendBtn.disabled=false;sendMessage();}
+  const _welcomeHTML=`<div class="welcome-screen" id="welcomeScreen"><div class="welcome-icon"><svg viewBox="0 0 24 24" fill="#0a0806"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg></div><div class="welcome-title">Chat with <span class="grad">MovieAgent</span></div><p class="welcome-sub">Welcome. I am your <strong>Movie Agent</strong>. Specify your preferred mood, genre, or style, and I will find your perfect match from 4,800+ titles.</p><div class="suggestions"><div class="sugg-pill" onclick="sendSuggestion(this)">🎬 Mind-bending movies like Inception</div><div class="sugg-pill" onclick="sendSuggestion(this)">👻 Horror films from the 90s</div><div class="sugg-pill" onclick="sendSuggestion(this)">💕 Romantic movies with a twist ending</div><div class="sugg-pill" onclick="sendSuggestion(this)">🚀 Best adventurous movies</div><div class="sugg-pill" onclick="sendSuggestion(this)">😂 Comedy movies to watch with friends</div><div class="sugg-pill" onclick="sendSuggestion(this)">🏆 Oscar winning dramas</div></div></div>`;
+  function clearChat(){history=[];messagesArea.innerHTML=_welcomeHTML;}
+  function escapeHtml(str){return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
   chatInput.focus();
 </script>
 
-
-<!-- ============================================================
-     MOVIE DETAIL POPUP  —  paste this before </body> in all 3 pages
-     ============================================================ -->
-
-<!-- POPUP OVERLAY -->
-<div id="moviePopup" style="
-  display:none; position:fixed; inset:0; z-index:9999;
-  background:rgba(0,0,0,0.85); backdrop-filter:blur(10px);
-  align-items:center; justify-content:center; padding:1rem;
-  animation:popFadeIn .25s ease both;
-">
-  <div id="popupBox" style="
-    position:relative; width:100%; max-width:780px; max-height:92vh;
-    background:#130f1e; border:1px solid rgba(255,255,255,0.1);
-    border-radius:16px; overflow:hidden; overflow-y:auto;
-    box-shadow:0 40px 100px rgba(0,0,0,0.8);
-    animation:popSlideUp .3s cubic-bezier(.16,1,.3,1) both;
-  ">
-
-    <!-- CLOSE BTN -->
-    <button onclick="closeMoviePopup()" style="
-      position:sticky; top:12px; float:right; margin:12px 12px 0 0;
-      background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12);
-      color:#fff; border-radius:8px; width:34px; height:34px;
-      font-size:16px; cursor:pointer; z-index:10;
-      display:flex; align-items:center; justify-content:center;
-      transition:background .2s;
-    " onmouseover="this.style.background='rgba(232,64,154,0.25)'"
-       onmouseout="this.style.background='rgba(255,255,255,0.08)'">✕</button>
-
-    <!-- BACKDROP -->
-    <div id="popBackdrop" style="
-      width:100%; height:220px; object-fit:cover;
-      background:#1a1528; position:relative; overflow:hidden;
-    ">
-      <img id="popBackdropImg" src="" alt="" style="
-        width:100%; height:100%; object-fit:cover; display:block;
-        opacity:0.45; filter:blur(1px);
-      " onerror="this.style.display='none'"/>
-      <div style="
-        position:absolute; inset:0;
-        background:linear-gradient(to bottom, transparent 30%, #130f1e 100%);
-      "></div>
+<div id="moviePopup" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.88);backdrop-filter:blur(12px);align-items:center;justify-content:center;padding:1rem;">
+  <div id="popupBox" style="position:relative;width:100%;max-width:780px;max-height:92vh;background:#0f0c09;border:1px solid rgba(249,115,22,0.15);border-radius:16px;overflow:hidden;overflow-y:auto;box-shadow:0 40px 100px rgba(0,0,0,0.9),0 0 60px rgba(249,115,22,0.06);">
+    <button onclick="closeMoviePopup()" style="position:sticky;top:12px;float:right;margin:12px 12px 0 0;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#fff;border-radius:8px;width:34px;height:34px;font-size:16px;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center;transition:background .2s;" onmouseover="this.style.background='rgba(249,115,22,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">✕</button>
+    <div id="popBackdrop" style="width:100%;height:200px;background:#141009;position:relative;overflow:hidden;"><img id="popBackdropImg" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:block;opacity:0.4;filter:blur(2px);" onerror="this.style.display='none'"/><div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 30%,#0f0c09 100%);"></div></div>
+    <div style="padding:0 1.4rem 1.6rem;margin-top:-70px;position:relative;">
+      <div style="display:flex;gap:1.2rem;align-items:flex-end;flex-wrap:wrap;"><img id="popPoster" src="" alt="" style="width:100px;flex-shrink:0;border-radius:10px;border:2px solid rgba(249,115,22,0.2);box-shadow:0 16px 40px rgba(0,0,0,0.7);"/><div style="flex:1;min-width:150px;"><div id="popGenres" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;"></div><h2 id="popTitle" style="font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(1.1rem,3vw,1.9rem);color:#fef3e2;line-height:1.1;margin-bottom:8px;letter-spacing:-0.5px;"></h2><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;"><span id="popRating" style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;background:linear-gradient(135deg,#f97316,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;"></span><span id="popYear" style="font-family:'DM Mono',monospace;font-size:11px;color:#5c4a32;"></span><span id="popRuntime" style="font-family:'DM Mono',monospace;font-size:11px;color:#5c4a32;"></span></div></div></div>
+      <p id="popOverview" style="margin-top:1.2rem;font-size:14px;color:#b09070;line-height:1.8;font-family:'DM Sans',sans-serif;"></p>
+      <div id="popCastWrap" style="margin-top:1.2rem;"><div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:#5c4a32;text-transform:uppercase;margin-bottom:8px;">Cast</div><div id="popCast" style="display:flex;gap:8px;flex-wrap:wrap;"></div></div>
+      <div style="display:flex;gap:10px;margin-top:1.6rem;flex-wrap:wrap;"><button id="popTrailerBtn" onclick="openTrailer()" style="display:none;align-items:center;gap:8px;background:linear-gradient(135deg,#f97316,#d97706);color:#0a0806;border:none;padding:12px 22px;border-radius:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;transition:all .3s;box-shadow:0 6px 22px rgba(249,115,22,0.3);" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">▶ &nbsp;Watch Trailer on YouTube</button><div id="popNoTrailer" style="display:none;align-items:center;gap:8px;border:1px solid rgba(255,255,255,0.08);color:#5c4a32;padding:12px 22px;border-radius:8px;font-family:'DM Mono',monospace;font-size:11px;">No trailer available</div></div>
     </div>
-
-    <!-- CONTENT -->
-    <div style="padding:0 1.8rem 1.8rem; margin-top:-80px; position:relative;">
-
-      <!-- Poster + Info row -->
-      <div style="display:flex; gap:1.4rem; align-items:flex-end; flex-wrap:wrap;">
-        <img id="popPoster" src="" alt="" style="
-          width:120px; flex-shrink:0; border-radius:10px;
-          border:2px solid rgba(255,255,255,0.12);
-          box-shadow:0 16px 40px rgba(0,0,0,0.6);
-        "/>
-        <div style="flex:1; min-width:180px;">
-          <div id="popGenres" style="
-            display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;
-          "></div>
-          <h2 id="popTitle" style="
-            font-family:'Manrope',sans-serif; font-weight:800;
-            font-size:clamp(1.3rem,3vw,1.9rem); color:#f5f0ff;
-            line-height:1.1; margin-bottom:8px; letter-spacing:-0.5px;
-          "></h2>
-          <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
-            <span id="popRating" style="
-              font-family:'Bebas Neue',sans-serif; font-size:1.5rem;
-              background:linear-gradient(135deg,#e8409a,#f97316);
-              -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
-            "></span>
-            <span id="popYear" style="font-family:'Fira Code',monospace; font-size:11px; color:#6b6478;"></span>
-            <span id="popRuntime" style="font-family:'Fira Code',monospace; font-size:11px; color:#6b6478;"></span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Overview -->
-      <p id="popOverview" style="
-        margin-top:1.2rem; font-size:14px; color:#aaa3c0;
-        line-height:1.8; font-family:'Manrope',sans-serif;
-      "></p>
-
-      <!-- Cast -->
-      <div id="popCastWrap" style="margin-top:1.2rem;">
-        <div style="
-          font-family:'Fira Code',monospace; font-size:9px;
-          letter-spacing:2px; color:#6b6478; text-transform:uppercase; margin-bottom:8px;
-        ">Cast</div>
-        <div id="popCast" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
-      </div>
-
-      <!-- Buttons -->
-      <div style="display:flex; gap:10px; margin-top:1.6rem; flex-wrap:wrap;">
-        <button id="popTrailerBtn" onclick="openTrailer()" style="
-          display:none;
-          align-items:center; gap:8px;
-          background:linear-gradient(135deg,#e8409a,#f97316);
-          color:#fff; border:none; padding:12px 26px; border-radius:8px;
-          font-family:'Manrope',sans-serif; font-weight:700; font-size:13px;
-          cursor:pointer; transition:all .3s;
-          box-shadow:0 6px 22px rgba(232,64,154,0.3);
-        " onmouseover="this.style.transform='translateY(-2px)'"
-           onmouseout="this.style.transform='translateY(0)'">
-          ▶ &nbsp;Watch Trailer on YouTube
-        </button>
-        <div id="popNoTrailer" style="
-          display:none; align-items:center; gap:8px;
-          border:1px solid rgba(255,255,255,0.1); color:#6b6478;
-          padding:12px 22px; border-radius:8px;
-          font-family:'Fira Code',monospace; font-size:11px;
-        ">No trailer available</div>
-      </div>
-
-    </div>
-
-    <!-- LOADING STATE -->
-    <div id="popLoader" style="
-      display:flex; align-items:center; justify-content:center;
-      padding:4rem; gap:10px;
-    ">
-      <div style="
-        width:10px; height:10px; border-radius:50%; background:#e8409a;
-        animation:typingBounce 1.2s infinite ease-in-out;
-      "></div>
-      <div style="
-        width:10px; height:10px; border-radius:50%; background:#e8409a;
-        animation:typingBounce 1.2s .2s infinite ease-in-out;
-      "></div>
-      <div style="
-        width:10px; height:10px; border-radius:50%; background:#e8409a;
-        animation:typingBounce 1.2s .4s infinite ease-in-out;
-      "></div>
-    </div>
-
+    <div id="popLoader" style="display:flex;align-items:center;justify-content:center;padding:4rem;gap:10px;"><div style="width:10px;height:10px;border-radius:50%;background:#f97316;animation:tBounce 1.2s infinite ease-in-out;"></div><div style="width:10px;height:10px;border-radius:50%;background:#f97316;animation:tBounce 1.2s .2s infinite ease-in-out;"></div><div style="width:10px;height:10px;border-radius:50%;background:#f97316;animation:tBounce 1.2s .4s infinite ease-in-out;"></div></div>
   </div>
 </div>
-
-<style>
-  @keyframes popFadeIn  { from{opacity:0} to{opacity:1} }
-  @keyframes popSlideUp { from{opacity:0;transform:translateY(40px)} to{opacity:1;transform:translateY(0)} }
-  @keyframes typingBounce {
-    0%,60%,100%{ transform:translateY(0); opacity:.4; }
-    30%{ transform:translateY(-8px); opacity:1; }
-  }
-  #moviePopup::-webkit-scrollbar { width:3px; }
-  #popupBox::-webkit-scrollbar   { width:3px; }
-  #popupBox::-webkit-scrollbar-track { background:transparent; }
-  #popupBox::-webkit-scrollbar-thumb { background:#2c2640; border-radius:2px; }
-</style>
-
+<style>@keyframes popFadeIn{from{opacity:0}to{opacity:1}}@keyframes popSlideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}@keyframes tBounce{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-8px);opacity:1}}</style>
 <script>
-  let _trailerUrl = null;
-
-  function openMoviePopup(title) {
-    const popup   = document.getElementById('moviePopup');
-    const loader  = document.getElementById('popLoader');
-    const content = document.getElementById('popBackdrop').parentElement;
-
-    // show overlay + loader, hide content
-    popup.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-    loader.style.display  = 'flex';
-    _setContentVisible(false);
-
-    fetch(`/api/movie-details?title=${encodeURIComponent(title)}`)
-      .then(r => r.json())
-      .then(data => {
-        if (data.error) throw new Error(data.error);
-        _populatePopup(data);
-      })
-      .catch(err => {
-        loader.style.display = 'none';
-        _setContentVisible(true);
-        document.getElementById('popTitle').textContent    = title;
-        document.getElementById('popOverview').textContent = 'Could not load details. Please try again.';
-        document.getElementById('popPoster').src           = 'https://via.placeholder.com/120x180?text=?';
-        document.getElementById('popRating').textContent   = '';
-        document.getElementById('popYear').textContent     = '';
-        document.getElementById('popRuntime').textContent  = '';
-      });
-  }
-
-  function _populatePopup(d) {
-    _trailerUrl = d.trailer_url;
-
-    // Backdrop
-    const bdImg = document.getElementById('popBackdropImg');
-    if (d.backdrop) { bdImg.src = d.backdrop; bdImg.style.display = 'block'; }
-    else            { bdImg.style.display = 'none'; }
-
-    // Poster
-    document.getElementById('popPoster').src = d.poster;
-
-    // Genres
-    const genreWrap = document.getElementById('popGenres');
-    genreWrap.innerHTML = '';
-    (d.genres || []).forEach(g => {
-      const span = document.createElement('span');
-      span.textContent = g;
-      span.style.cssText = `
-        font-family:'Fira Code',monospace; font-size:9px; letter-spacing:1.5px;
-        text-transform:uppercase; color:#f472b6;
-        background:rgba(232,64,154,0.12); border:1px solid rgba(232,64,154,0.22);
-        border-radius:4px; padding:3px 9px;
-      `;
-      genreWrap.appendChild(span);
-    });
-
-    // Title, rating, year, runtime
-    document.getElementById('popTitle').textContent   = d.title;
-    document.getElementById('popRating').textContent  = d.rating ? `★ ${d.rating}` : '';
-    document.getElementById('popYear').textContent    = d.release || '';
-    document.getElementById('popRuntime').textContent = d.runtime ? `${d.runtime} min` : '';
-
-    // Overview
-    document.getElementById('popOverview').textContent = d.overview || 'No description available.';
-
-    // Cast
-    const castWrap = document.getElementById('popCast');
-    castWrap.innerHTML = '';
-    (d.cast || []).forEach(name => {
-      const chip = document.createElement('span');
-      chip.textContent = name;
-      chip.style.cssText = `
-        font-family:'Manrope',sans-serif; font-size:11px; font-weight:600;
-        color:#ddd6f0; background:#241e38;
-        border:1px solid rgba(255,255,255,0.08);
-        border-radius:50px; padding:4px 12px;
-      `;
-      castWrap.appendChild(chip);
-    });
-
-    // Trailer button
-    const btn       = document.getElementById('popTrailerBtn');
-    const noTrailer = document.getElementById('popNoTrailer');
-    if (d.trailer_url) {
-      btn.style.display       = 'flex';
-      noTrailer.style.display = 'none';
-    } else {
-      btn.style.display       = 'none';
-      noTrailer.style.display = 'flex';
-    }
-
-    // Hide loader, show content
-    document.getElementById('popLoader').style.display = 'none';
-    _setContentVisible(true);
-  }
-
-  function _setContentVisible(visible) {
-    const box = document.getElementById('popupBox');
-    // everything except loader and close btn
-    ['popBackdrop','popPoster','popGenres','popTitle','popRating',
-     'popYear','popRuntime','popOverview','popCastWrap','popTrailerBtn','popNoTrailer']
-      .forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.visibility = visible ? 'visible' : 'hidden';
-      });
-  }
-
-  function openTrailer() {
-    if (_trailerUrl) window.open(_trailerUrl, '_blank');
-  }
-
-  function closeMoviePopup() {
-    const popup = document.getElementById('moviePopup');
-    popup.style.opacity = '0';
-    popup.style.transition = 'opacity .2s';
-    setTimeout(() => {
-      popup.style.display  = 'none';
-      popup.style.opacity  = '1';
-      popup.style.transition = '';
-      document.body.style.overflow = '';
-    }, 200);
-  }
-
-  // Close on backdrop click
-  document.getElementById('moviePopup').addEventListener('click', function(e) {
-    if (e.target === this) closeMoviePopup();
-  });
-
-  // Close on Escape
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeMoviePopup();
-  });
+  let _trailerUrl=null;
+  function openMoviePopup(title){const popup=document.getElementById('moviePopup');popup.style.display='flex';popup.style.animation='popFadeIn .25s ease both';document.getElementById('popupBox').style.animation='popSlideUp .3s cubic-bezier(.16,1,.3,1) both';document.body.style.overflow='hidden';document.getElementById('popLoader').style.display='flex';_setContentVisible(false);fetch(`/api/movie-details?title=${encodeURIComponent(title)}`).then(r=>r.json()).then(data=>{if(data.error)throw new Error(data.error);_populatePopup(data);}).catch(err=>{document.getElementById('popLoader').style.display='none';_setContentVisible(true);document.getElementById('popTitle').textContent=title;document.getElementById('popOverview').textContent='Could not load details.';document.getElementById('popPoster').src='https://via.placeholder.com/120x180?text=?';});}
+  function _populatePopup(d){_trailerUrl=d.trailer_url;const bdImg=document.getElementById('popBackdropImg');if(d.backdrop){bdImg.src=d.backdrop;bdImg.style.display='block';}else{bdImg.style.display='none';}document.getElementById('popPoster').src=d.poster;const gw=document.getElementById('popGenres');gw.innerHTML='';(d.genres||[]).forEach(g=>{const s=document.createElement('span');s.textContent=g;s.style.cssText="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#fb923c;background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.22);border-radius:4px;padding:3px 9px;";gw.appendChild(s);});document.getElementById('popTitle').textContent=d.title;document.getElementById('popRating').textContent=d.rating?`★ ${d.rating}`:'';document.getElementById('popYear').textContent=d.release||'';document.getElementById('popRuntime').textContent=d.runtime?`${d.runtime} min`:'';document.getElementById('popOverview').textContent=d.overview||'No description available.';const cw=document.getElementById('popCast');cw.innerHTML='';(d.cast||[]).forEach(name=>{const c=document.createElement('span');c.textContent=name;c.style.cssText="font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;color:#e8d5b7;background:#181209;border:1px solid rgba(249,115,22,0.1);border-radius:50px;padding:4px 12px;";cw.appendChild(c);});const btn=document.getElementById('popTrailerBtn'),nt=document.getElementById('popNoTrailer');if(d.trailer_url){btn.style.display='flex';nt.style.display='none';}else{btn.style.display='none';nt.style.display='flex';}document.getElementById('popLoader').style.display='none';_setContentVisible(true);}
+  function _setContentVisible(v){['popBackdrop','popPoster','popGenres','popTitle','popRating','popYear','popRuntime','popOverview','popCastWrap','popTrailerBtn','popNoTrailer'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.visibility=v?'visible':'hidden';});}
+  function openTrailer(){if(_trailerUrl)window.open(_trailerUrl,'_blank');}
+  function closeMoviePopup(){const p=document.getElementById('moviePopup');p.style.opacity='0';p.style.transition='opacity .2s';setTimeout(()=>{p.style.display='none';p.style.opacity='1';p.style.transition='';document.body.style.overflow='';},200);}
+  document.getElementById('moviePopup').addEventListener('click',function(e){if(e.target===this)closeMoviePopup();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMoviePopup();});
 </script>
-
 </body>
-
-
 </html>
