@@ -13,13 +13,10 @@ from dotenv import load_dotenv
 app = Flask(__name__)
 
 load_dotenv()
-# ================= CONFIGURATION & KEYS =================
 TMDB_API_KEY = os.environ.get("TMDB_API_KEY")
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 
 groq_client = Groq(api_key=GROQ_API_KEY)
-
-# ================= LOAD MODELS & DATA =================
 bert_model = SentenceTransformer('all-MiniLM-L6-v2')
 
 def load_data():
@@ -43,8 +40,6 @@ cf_sim_df = db["cf_sim"]
 movie_embeddings = db["embeddings"]
 popular_df = db["popular"]
 
-# ================= HELPER FUNCTIONS =================
-
 def fetch_poster(movie_title):
     try:
         url = "https://api.themoviedb.org/3/search/movie"
@@ -61,12 +56,9 @@ def fetch_posters_parallel(titles):
     with ThreadPoolExecutor(max_workers=10) as ex:
         return list(ex.map(fetch_poster, titles))
 
-# ================= NEW: MOVIE DETAILS + TRAILER =================
-
 def fetch_movie_details(title):
     """TMDB se movie ki full details aur YouTube trailer ID fetch karna"""
     try:
-        # Step 1: Search movie to get TMDB ID
         search_url = "https://api.themoviedb.org/3/search/movie"
         params = {"query": title, "api_key": TMDB_API_KEY}
         r = requests.get(search_url, params=params, timeout=5)
@@ -77,18 +69,15 @@ def fetch_movie_details(title):
         movie = results[0]
         tmdb_id = movie['id']
 
-        # Step 2: Fetch full details
         detail_url = f"https://api.themoviedb.org/3/movie/{tmdb_id}"
         detail_params = {"api_key": TMDB_API_KEY, "append_to_response": "credits"}
         d = requests.get(detail_url, params=detail_params, timeout=5).json()
 
-        # Step 3: Fetch trailer from videos endpoint
         video_url = f"https://api.themoviedb.org/3/movie/{tmdb_id}/videos"
         v = requests.get(video_url, params={"api_key": TMDB_API_KEY}, timeout=5).json()
 
         trailer_key = None
         videos = v.get('results', [])
-        # Priority: Official Trailer > Teaser > any YouTube video
         for vtype in ['Trailer', 'Teaser', 'Clip']:
             for vid in videos:
                 if vid.get('site') == 'YouTube' and vid.get('type') == vtype:
@@ -97,19 +86,15 @@ def fetch_movie_details(title):
             if trailer_key:
                 break
 
-        # Extract cast (top 5)
         cast = []
         for c in d.get('credits', {}).get('cast', [])[:5]:
             cast.append(c.get('name', ''))
 
-        # Extract genres
         genres = [g['name'] for g in d.get('genres', [])]
 
-        # Poster
         poster_path = d.get('poster_path')
         poster = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else "https://via.placeholder.com/300x450?text=No+Poster"
 
-        # Backdrop
         backdrop_path = d.get('backdrop_path')
         backdrop = f"https://image.tmdb.org/t/p/w1280{backdrop_path}" if backdrop_path else None
 
@@ -131,9 +116,6 @@ def fetch_movie_details(title):
     except Exception as e:
         print(f"DEBUG: fetch_movie_details error -> {e}")
         return None
-
-
-# ================= CORE AI LOGIC =================
 
 def build_contextual_query(user_message, history):
     print(f"\n--- [DEBUG: Context Builder] ---")
@@ -195,8 +177,6 @@ def ask_groq(user_message, retrieved_movies, history):
         print(f"DEBUG: Groq Logic Error -> {e}")
         return {"reply": "I'm having a technical glitch. Try again?", "movies": []}
 
-# ================= ROUTES =================
-
 @app.route('/')
 def home():
     titles = popular_df['title'].tolist()
@@ -235,8 +215,6 @@ def chat_api():
         "movies": final_movies
     })
 
-# ================= NEW: MOVIE DETAILS API =================
-
 @app.route('/api/movie-details', methods=['GET'])
 def movie_details_api():
     title = request.args.get('title', '').strip()
@@ -246,8 +224,6 @@ def movie_details_api():
     if not details:
         return jsonify({"error": "Movie not found"}), 404
     return jsonify(details)
-
-# ================= RECOMMEND ROUTE =================
 
 @app.route('/recommend', methods=['GET', 'POST'])
 def recommend():
